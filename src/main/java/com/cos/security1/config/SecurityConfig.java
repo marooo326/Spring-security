@@ -14,7 +14,7 @@ public class SecurityConfig {
 
     //해당 메서드의 리턴되는 오브젝트를 IoC로 등록해준다.
     @Bean
-    public BCryptPasswordEncoder encoder (){
+    public BCryptPasswordEncoder encoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -24,12 +24,15 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 // 접근 권한 설정
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/user/**").authenticated()
-                        .requestMatchers("/manager/**").hasAnyRole("ADMIN","MANAGER")
-                        .requestMatchers("/admin/**").hasAnyRole("ADMIN","MANAGER")
+                        .requestMatchers("/user/**").authenticated() // 인증만 되면 접속 가능
+                        .requestMatchers("/manager/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "MANAGER")
                         .anyRequest().permitAll())
                 .formLogin(login ->
-                        login.loginPage("/loginForm"))
+                        login.loginPage("/loginForm")
+                                .loginProcessingUrl("/login") // /login 주소가 호출되면 시큐리티가 대신 로그인을 진행해준다.
+                                .defaultSuccessUrl("/")
+                )
                 .build();
     }
 
