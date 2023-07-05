@@ -4,7 +4,7 @@ import com.cos.security1.model.User;
 import com.cos.security1.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,7 +56,7 @@ public class IndexController {
     @PostMapping("/join")
     public String join(User user) {
         log.info(user.toString());
-        user.setRole("USER");
+        user.setRole("ROLE_USER");
         String encPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encPassword);
         userRepository.save(user);
@@ -67,5 +67,13 @@ public class IndexController {
     @GetMapping("/joinProc")
     public String joinProc() {
         return "회원가입 왼료";
+    }
+
+    // @Secured("ROLE_ADMIN") //특정 페이지만 간단히 막을
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_MANAGER')")
+    @ResponseBody
+    @GetMapping("/data")
+    public String data(){
+        return "개인정보";
     }
 }

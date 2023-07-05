@@ -29,7 +29,7 @@ public class PrincipalDetails implements UserDetails {
                 return user.getRole();
             }
         });
-        return null;
+        return collection;
     }
 
     @Override
