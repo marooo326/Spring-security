@@ -1,16 +1,16 @@
 package com.jwt.demo.config;
 
-import jakarta.servlet.http.HttpFilter;
+import com.jwt.demo.filter.MyFilter3;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @RequiredArgsConstructor
@@ -20,11 +20,12 @@ public class SecurityConfig{
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception{
-        return httpSecurity.csrf(AbstractHttpConfigurer::disable)
+        return httpSecurity
+                .addFilterBefore(new MyFilter3(), SecurityContextHolderFilter.class)
+                .csrf(AbstractHttpConfigurer::disable)
                 .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(source))
-                // 세션 사용 안함 (Stateless Server로)
-                .sessionManagement(manage-> manage.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .formLogin(AbstractHttpConfigurer::disable)
+                .sessionManagement(manage-> manage.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함 (Stateless Server로)
+                .formLogin(AbstractHttpConfigurer::disable) // form tag login 안함
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize-> authorize
                         .requestMatchers("/api/v1/user/**")
@@ -36,7 +37,6 @@ public class SecurityConfig{
                         .requestMatchers("/api/v1/admin/**")
                         .hasAnyRole("ADMIN")
                         .anyRequest().permitAll())
-
                 .build();
     }
 }
