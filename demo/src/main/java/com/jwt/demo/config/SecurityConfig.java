@@ -1,5 +1,6 @@
 package com.jwt.demo.config;
 
+import com.jwt.demo.config.auth.jwt.JwtAuthenticationFilter;
 import com.jwt.demo.filter.MyFilter3;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -24,19 +25,21 @@ public class SecurityConfig{
                 .addFilterBefore(new MyFilter3(), SecurityContextHolderFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(source))
-                .sessionManagement(manage-> manage.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함 (Stateless Server로)
+                .sessionManagement(manage -> manage.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함 (Stateless Server로)
                 .formLogin(AbstractHttpConfigurer::disable) // form tag login 안함
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorize-> authorize
+                .addFilter(new JwtAuthenticationFilter())
+                .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/v1/user/**")
-                        .hasAnyRole("USER","ADMIN","MANAGER")
+                        .hasAnyRole("USER", "ADMIN", "MANAGER")
 
                         .requestMatchers("/api/v1/manager/**")
-                        .hasAnyRole("ADMIN","MANAGER")
+                        .hasAnyRole("ADMIN", "MANAGER")
 
                         .requestMatchers("/api/v1/admin/**")
                         .hasAnyRole("ADMIN")
-                        .anyRequest().permitAll())
+                        .anyRequest().permitAll()
+                )
                 .build();
     }
 }
